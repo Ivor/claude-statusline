@@ -8,6 +8,11 @@ Real-time stats display for [Claude Code](https://claude.com/code) CLI showing s
 ~/projects/myapp on main! [Opus 4.5 | $3.43 | CTX: 32%] (today: $5.44 | $5.44 block (3h 19m left))
 ```
 
+When there's an error (e.g., Node.js not configured for the project):
+```
+~/projects/myapp on main! [Opus 4.5 | nodejs not configured | CTX: 32%]
+```
+
 ## Features
 
 - **Session cost** - Matches `/cost` output (Claude Code's actual calculation)
@@ -15,6 +20,7 @@ Real-time stats display for [Claude Code](https://claude.com/code) CLI showing s
 - **Git integration** - Branch, dirty status (`!`), untracked (`?`), ahead/behind (`↑↓`)
 - **Daily summary** - Today's total and 5-hour block with time remaining
 - **Color-coded context** - Green (<65%), Yellow (65-75%), Red (>75%)
+- **Error display** - Shows ccusage errors in red instead of silently failing
 
 ## Installation
 
@@ -104,6 +110,14 @@ Comment out or delete sections you don't need (git info, cost, daily summary, et
 **Cost not showing?**
 - Ensure Node.js/npx is installed: `npx --version`
 - ccusage downloads automatically on first run
+
+**"nodejs not configured" error?**
+- Your project has a `.tool-versions` file requiring a specific Node.js version
+- Install the required version: `asdf install nodejs <version>` (check `.tool-versions` for the version)
+- Or install any listed version: `asdf install nodejs 22.16.0`
+
+**"npx not found" error?**
+- Install Node.js from [nodejs.org](https://nodejs.org/) or via your package manager
 
 **Context % not showing?**
 - Ensure jq is installed: `jq --version`
