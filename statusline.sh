@@ -73,9 +73,21 @@ fi
 session_cost=""
 today_cost=""
 block_info=""
+ccusage_error=""
 if command -v npx &> /dev/null; then
-    ccusage_out=$(echo "$input" | npx -y ccusage@latest statusline --cost-source cc 2>/dev/null)
-    if [ -n "$ccusage_out" ]; then
+    ccusage_out=$(echo "$input" | npx -y ccusage@latest statusline --cost-source cc 2>&1)
+    ccusage_exit=$?
+    if [ $ccusage_exit -ne 0 ] || [[ "$ccusage_out" == *"No version is set"* ]]; then
+        # Extract short error message
+        if [[ "$ccusage_out" == *"No version is set for command"* ]]; then
+            ccusage_error="nodejs not configured"
+        elif [[ "$ccusage_out" == *"Invalid input"* ]]; then
+            ccusage_error="ccusage: invalid input"
+        else
+            # Generic error - take first line, truncate
+            ccusage_error=$(echo "$ccusage_out" | head -1 | cut -c1-30)
+        fi
+    elif [ -n "$ccusage_out" ]; then
         # Extract session cost (first dollar amount after money emoji)
         session_cost=$(echo "$ccusage_out" | sed -n 's/.*💰 *\$\([0-9.]*\).*/\1/p')
         if [ -n "$session_cost" ]; then
@@ -89,6 +101,8 @@ if command -v npx &> /dev/null; then
         # Extract block cost with time remaining
         block_info=$(echo "$ccusage_out" | grep -oE '\$[0-9]+\.[0-9]+ block \([^)]+\)')
     fi
+else
+    ccusage_error="npx not found"
 fi
 
 # Build output
@@ -102,8 +116,10 @@ fi
 
 output="${output} [\033[35m${model}\033[0m"
 
-# Add session cost
-if [ -n "$session_cost" ]; then
+# Add session cost or error
+if [ -n "$ccusage_error" ]; then
+    output="${output} | \033[31m${ccusage_error}\033[0m"
+elif [ -n "$session_cost" ]; then
     output="${output} | \033[33m${session_cost}\033[0m"
 fi
 
